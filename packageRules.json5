@@ -1,0 +1,22 @@
+{
+  $schema: "https://docs.renovatebot.com/renovate-schema.json",
+  packageRules: [
+    {
+      description: "Group Python dependencies for smoother updates",
+      matchManagers: ["pip_requirements"],
+      groupName: "Python dependencies",
+      matchUpdateTypes: ["minor", "patch"],
+    },
+    {
+      description: "Separate major Python updates for review",
+      matchManagers: ["pip_requirements"],
+      matchUpdateTypes: ["major"],
+      groupName: null,
+    },
+    {
+      description: "Group Docker image updates",
+      matchDatasources: ["docker"],
+      groupName: "Docker images",
+    },
+  ],
+}
