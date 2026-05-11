@@ -17,7 +17,7 @@
         "/^actions\//",
         "/^anchore\//",
         "/^docker\//",
-        "/^misospace\/pr-reviewer-action$/",
+        "/^misospace\//",
         "/^renovatebot\//",
         "/^sigstore\//",
       ],
