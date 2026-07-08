@@ -5,10 +5,15 @@
       description: "Auto-merge GitHub Actions",
       matchManagers: ["github-actions"],
       automerge: true,
-      automergeType: "branch",
+      // PR + platformAutomerge (not branch): these repos' main has required
+      // status checks, which only run in a PR context. Branch automerge never
+      // opens a PR, so the checks never report and the merge blocks forever
+      // ("Pending Branch Automerge — await pending status checks"). A PR lets
+      // CI run and GitHub native auto-merge merges as soon as it passes.
+      automergeType: "pr",
+      platformAutomerge: true,
       matchUpdateTypes: ["minor", "patch", "digest"],
       minimumReleaseAge: "3 days",
-      ignoreTests: true,
     },
     {
       description: "Auto-merge trusted GitHub Actions",
@@ -22,10 +27,10 @@
         "/^sigstore\//",
       ],
       automerge: true,
-      automergeType: "branch",
+      automergeType: "pr",
+      platformAutomerge: true,
       matchUpdateTypes: ["minor", "patch", "digest"],
       minimumReleaseAge: "1 minute",
-      ignoreTests: true,
     },
     {
       description: "Pin GitHub Action digests to SHA",
