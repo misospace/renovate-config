@@ -38,5 +38,41 @@
       matchPackagePatterns: [".*"],
       pinDigests: true,
     },
+    {
+      // A digest-only update means the SAME tag was rebuilt upstream — almost
+      // always the base image picking up OS security patches. The tag stays
+      // pinned, so this never changes language or distro version: a 3.14 ->
+      // 3.15 move is a separate update type and still gets reviewed by hand.
+      //
+      // Four controls, so this is narrower than it looks:
+      //   1. digest only — version bumps are excluded.
+      //   2. allow-list — Docker Official Images and our own registry. A
+      //      third-party image cannot ride this rule.
+      //   3. minimumReleaseAge — a rebuild that is broken or compromised is
+      //      usually superseded or pulled inside this window. Matches the
+      //      3 days already used for GitHub Actions above.
+      //   4. PR automerge with required checks — the repo's CI builds against
+      //      the new digest and must pass. This is the control that actually
+      //      catches a bad image, since a broken base fails the build.
+      description: "Auto-merge base-image digest refreshes",
+      matchDatasources: ["docker"],
+      matchUpdateTypes: ["digest"],
+      // Dots are double-escaped so JSON5 hands Renovate a literal "\." — a single
+      // backslash collapses during parsing, leaving "." to match any character
+      // (so "dockerXio/library/…" would pass an allow-list meant to be exact).
+      matchPackageNames: [
+        "/^docker\\.io\\/library\\//",
+        "/^ghcr\\.io\\/misospace\\//",
+      ],
+      // Own group, deliberately. packageRules.json5 groups every docker update
+      // into "Docker images"; a digest batched with a version bump inherits the
+      // version bump's review requirement and never automerges. Splitting the
+      // digests out keeps them flowing on their own.
+      groupName: "Docker image digests",
+      automerge: true,
+      automergeType: "pr",
+      platformAutomerge: true,
+      minimumReleaseAge: "3 days",
+    },
   ],
 }
