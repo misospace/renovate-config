@@ -57,11 +57,16 @@
       description: "Auto-merge base-image digest refreshes",
       matchDatasources: ["docker"],
       matchUpdateTypes: ["digest"],
-      // Dots are double-escaped so JSON5 hands Renovate a literal "\." — a single
-      // backslash collapses during parsing, leaving "." to match any character
-      // (so "dockerXio/library/…" would pass an allow-list meant to be exact).
+      // Renovate reports Docker Official Images from ordinary Dockerfiles by
+      // their bare package name (for example "golang", "node", "python"), not
+      // necessarily as "docker.io/library/golang". Accept either representation.
+      // A bare one-segment Docker image is the Docker Hub library namespace;
+      // namespaced third-party images such as "bitnami/postgresql" still fail.
+      //
+      // Dots are double-escaped so JSON5 hands Renovate a literal "\\." for
+      // the fully-qualified registry forms.
       matchPackageNames: [
-        "/^docker\\.io\\/library\\//",
+        "/^(?:docker\\.io\\/library\\/)?[^/]+$/",
         "/^ghcr\\.io\\/misospace\\//",
       ],
       // Own group, deliberately. packageRules.json5 groups every docker update
