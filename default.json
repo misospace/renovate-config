@@ -13,6 +13,13 @@
     ":disableRateLimiting",
     ":timezone(America/Edmonton)"
   ],
+  "packageRules": [
+    {
+      "description": "Keep Go module updates tidy so Renovate PRs satisfy go mod tidy CI checks",
+      "matchManagers": ["gomod"],
+      "postUpdateOptions": ["gomodTidy"]
+    }
+  ],
   "lockFileMaintenance": {
     "enabled": true,
     "schedule": ["before 5am on monday"]
