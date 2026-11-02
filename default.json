@@ -4,6 +4,7 @@
     "config:recommended",
     "docker:enableMajor",
     "helpers:pinGitHubActionDigests",
+    "github>misospace/renovate-config:npm.json5",
     "github>misospace/renovate-config:autoMerge.json5",
     "github>misospace/renovate-config:labels.json5",
     "github>misospace/renovate-config:semanticCommits.json5",
@@ -24,6 +25,7 @@
     "enabled": true,
     "schedule": ["before 5am on monday"]
   },
+  "npmrcMerge": true,
   "dependencyDashboardTitle": "Renovate Dashboard 🤖",
   "suppressNotifications": [
     "prEditedNotification",
