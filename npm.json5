@@ -1,0 +1,31 @@
+{
+$schema: "https://docs.renovatebot.com/renovate-schema.json",
+packageRules: [
+{
+// npm 12 flipped the allow-remote default to "none": any dependency
+// resolved to a bare tarball URL is refused with EALLOWREMOTE unless
+// allow-remote is "all" ("root" only covers direct project edges).
+// npm 12 also still misclassifies legitimate registry tarballs as
+// type=remote when arborist re-fetches bundleDependencies packages by
+// their lockfile `resolved` URL (npa re-parses name@URL and loses the
+// registry typing). Upstream bug + npm's own partial patch:
+// https://github.com/npm/cli/issues/9796
+//
+// Observed on dispatch #1521: lockFileMaintenance refreshed
+// site/package-lock.json fine (no bundled deps) but died on the root
+// lock refreshing @tailwindcss/oxide-wasm32-wasi (bundleDependencies),
+// every week, forever.
+//
+// Scope is the Renovate sandbox only — developer and CI installs keep
+// the npm 12 default gate. Blast radius inside the sandbox is bounded:
+// Renovate never introduces new URL-referenced deps by itself, every
+// resolved URL lands in the PR diff for review, and each repo's own
+// audit/advisory gates still run against the refreshed lock.
+//
+// Delete this rule once npm/cli#9796 is fixed and the fixed npm ships.
+description: "Allow registry-resolved tarball fetches in npm artifact updates (npm/cli#9796)",
+matchManagers: ["npm"],
+npmrc: "allow-remote=all",
+},
+],
+}
