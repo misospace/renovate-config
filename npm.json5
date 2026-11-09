@@ -1,7 +1,6 @@
 {
 $schema: "https://docs.renovatebot.com/renovate-schema.json",
-packageRules: [
-{
+
 // npm 12 flipped the allow-remote default to "none": any dependency
 // resolved to a bare tarball URL is refused with EALLOWREMOTE unless
 // allow-remote is "all" ("root" only covers direct project edges).
@@ -11,10 +10,23 @@ packageRules: [
 // registry typing). Upstream bug + npm's own partial patch:
 // https://github.com/npm/cli/issues/9796
 //
-// Observed on dispatch #1521: lockFileMaintenance refreshed
-// site/package-lock.json fine (no bundled deps) but died on the root
-// lock refreshing @tailwindcss/oxide-wasm32-wasi (bundleDependencies),
-// every week, forever.
+// Observed on dispatch lockFileMaintenance runs (#1441, #1521, #1577):
+// site/package-lock.json refreshed fine (no bundled deps) but the root
+// lock died re-resolving @tailwindcss/oxide-wasm32-wasi
+// (bundleDependencies), every week, forever.
+//
+// This must stay TOP LEVEL. The sandbox `.npmrc` used for lockfile
+// generation is resolved during extraction (`packageFile.npmrc`) from
+// repo/manager-level config only; packageRules are never applied at that
+// stage. The same rule scoped to a packageRule (PR #12) was accepted by
+// the config validator but was a no-op: #1577, the first LFM run after
+// #12 merged, failed identically. Verified locally against npm 12.2.2:
+// `npm install --package-lock-only` with `allow-remote=all` written to
+// the lock dir's .npmrc regenerates the lock including the wasm32 entry.
+//
+// `npmrcMerge: true` (set at top level in default.json) keeps each
+// repo's own .npmrc (e.g. dispatch's `include=dev`) intact — the
+// configured string is prepended to the sanitized repo file.
 //
 // Scope is the Renovate sandbox only — developer and CI installs keep
 // the npm 12 default gate. Blast radius inside the sandbox is bounded:
@@ -22,10 +34,6 @@ packageRules: [
 // resolved URL lands in the PR diff for review, and each repo's own
 // audit/advisory gates still run against the refreshed lock.
 //
-// Delete this rule once npm/cli#9796 is fixed and the fixed npm ships.
-description: "Allow registry-resolved tarball fetches in npm artifact updates (npm/cli#9796)",
-matchManagers: ["npm"],
+// Delete this once npm/cli#9796 is fixed and the fixed npm ships.
 npmrc: "allow-remote=all",
-},
-],
 }
